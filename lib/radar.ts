@@ -23,6 +23,7 @@ export type Radar = {
     authors: number;
   };
   coverage: string;
+  dataSource?: "import" | "api" | "mixed" | "empty";
   lastRun: { finished_at: string; status: string; truncated: boolean } | null;
   available: boolean;
   message?: string;
@@ -59,7 +60,7 @@ export async function radar(params: URLSearchParams): Promise<Radar> {
     [period, limit, q, hits],
   );
   const ids = result.rows.map((r) => r.id);
-  const [history, sources, summary, last, total] = await Promise.all([
+  const [history, sources, summary, last, total, scope] = await Promise.all([
     pool.query(
       `SELECT track_id,to_char(p.published_at AT TIME ZONE 'UTC','YYYY-MM-DD') AS "day",count(*)::int publications FROM post_tracks pt JOIN posts p ON p.id=pt.post_id WHERE track_id=ANY($1::text[]) AND p.published_at>=now()-interval '720 hours' AND p.published_at<=now() GROUP BY track_id,"day" ORDER BY "day"`,
       [ids],
@@ -79,6 +80,10 @@ export async function radar(params: URLSearchParams): Promise<Radar> {
       `SELECT count(DISTINCT pt.track_id)::int total FROM post_tracks pt JOIN posts p ON p.id=pt.post_id WHERE p.published_at>=now()-make_interval(hours=>$1*24) AND p.published_at<=now()`,
       [period],
     ),
+    pool.query(
+      `SELECT count(*) FILTER(WHERE pt.track_id LIKE 'csv:%')::int imported,count(*) FILTER(WHERE pt.track_id NOT LIKE 'csv:%')::int api FROM post_tracks pt JOIN posts p ON p.id=pt.post_id WHERE p.published_at>=now()-make_interval(hours=>$1*24) AND p.published_at<=now()`,
+      [period],
+    ),
   ]);
   return {
     available: true,
@@ -94,8 +99,20 @@ export async function radar(params: URLSearchParams): Promise<Radar> {
     summary: summary.rows[0],
     lastRun: last.rows[0] ?? null,
     total: total.rows[0].total,
-    coverage:
-      "Только аудиовложения настроенных публичных стен. Это не статистика всего ВКонтакте.",
+    dataSource: scope.rows[0].imported
+      ? scope.rows[0].api
+        ? "mixed"
+        : "import"
+      : scope.rows[0].api
+        ? "api"
+        : "empty",
+    coverage: scope.rows[0].imported
+      ? scope.rows[0].api
+        ? "Смешанная выборка: импорт CSV и наблюдения VK API. Идентичность треков между источниками автоматически не объединяется. Это не весь ВКонтакте."
+        : "Рейтинг по загруженным CSV. Сведения о постах и музыке предоставлены загрузившим файл; VK API их не проверял. Это не статистика всего ВКонтакте."
+      : scope.rows[0].api
+        ? "Только аудиовложения настроенных публичных стен, полученные VK API. Это не статистика всего ВКонтакте."
+        : "Пока нет наблюдений за выбранный период. Можно импортировать реальные публикации без токена VK.",
   };
 }
 export function csvCell(value: unknown) {
@@ -123,6 +140,8 @@ export function toCsv(tracks: Track[]) {
         "Авторы",
         "Предыдущая позиция",
         "Рост, %",
+        "Источник",
+        "Охват",
       ],
       ...tracks.map((t) => [
         t.position,
@@ -134,6 +153,10 @@ export function toCsv(tracks: Track[]) {
         t.authors,
         t.previousPosition,
         t.growth,
+        t.id.startsWith("csv:")
+          ? "Импорт CSV (данные администратора)"
+          : "VK API",
+        "Ограниченная выборка; не весь ВКонтакте",
       ]),
     ]
       .map((row) => row.map(csvCell).join(";"))

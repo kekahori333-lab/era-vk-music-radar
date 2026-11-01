@@ -1,10 +1,10 @@
-import "dotenv/config";
+import "../lib/load-env";
 import { collect } from "../lib/collector";
-import { db } from "../lib/db";
+import { closeDatabases } from "../lib/db";
 collect()
   .then(console.log)
   .catch((e) => {
     console.error(e.message);
     process.exitCode = 1;
   })
-  .finally(() => db().end());
+  .finally(() => closeDatabases());

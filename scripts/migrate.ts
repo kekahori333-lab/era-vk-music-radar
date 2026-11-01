@@ -1,11 +1,11 @@
-import "dotenv/config";
+import "../lib/load-env";
 import { readFile } from "node:fs/promises";
-import { db } from "../lib/db";
+import { db, closeDatabases } from "../lib/db";
 try {
-  await db().query(
+  await db("direct").query(
     await readFile(new URL("./schema.sql", import.meta.url), "utf8"),
   );
   console.log("Схема PostgreSQL готова");
 } finally {
-  await db().end();
+  await closeDatabases();
 }

@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "../lib/load-env";
 import { probeVk } from "../lib/vk-probe";
 try {
   const report = await probeVk();

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import pg from "pg";
 import { readFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
-import { db } from "../lib/db";
+import { db, closeDatabases } from "../lib/db";
 import { radar } from "../lib/radar";
 import { collect } from "../lib/collector";
 test(
@@ -19,6 +19,7 @@ test(
     const url = new URL(process.env.TEST_DATABASE_URL!);
     url.searchParams.set("options", `-csearch_path=${schema}`);
     process.env.DATABASE_URL = url.toString();
+    process.env.DATABASE_URL_UNPOOLED = url.toString();
     const originalFetch = globalThis.fetch;
     try {
       await db().query(
@@ -168,7 +169,7 @@ test(
       );
     } finally {
       globalThis.fetch = originalFetch;
-      await db().end();
+      await closeDatabases();
       await admin.query(`DROP SCHEMA ${schema} CASCADE`);
       await admin.end();
     }

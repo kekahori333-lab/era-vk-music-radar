@@ -1,5 +1,5 @@
 # Daily collection at 00:10 UTC. Set CRON_TZ only if supported by your cron implementation.
 CRON_TZ=UTC
-10 0 * * * cd /opt/era-vk-music-radar && /usr/bin/flock -n /tmp/era-radar.lock /usr/bin/npm run collect >> /var/log/era-radar.log 2>&1
+10 0 * * * cd /opt/era-vk-music-radar && /usr/bin/flock -n /tmp/era-radar.lock /usr/bin/npm run daily >> /var/log/era-radar.log 2>&1
 # Hourly collection is recommended for better rolling-window coverage:
-# 10 * * * * cd /opt/era-vk-music-radar && /usr/bin/flock -n /tmp/era-radar.lock /usr/bin/npm run collect >> /var/log/era-radar.log 2>&1
+# 10 * * * * cd /opt/era-vk-music-radar && /usr/bin/flock -n /tmp/era-radar.lock /usr/bin/npm run daily >> /var/log/era-radar.log 2>&1

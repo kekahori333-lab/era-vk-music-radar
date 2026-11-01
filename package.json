@@ -11,9 +11,15 @@
     "db:migrate": "node --import tsx scripts/migrate.ts",
     "collect": "node --import tsx scripts/collect.ts",
     "vk:probe": "node --import tsx scripts/probe.ts",
-    "test:integration": "node --import tsx --test tests/database.integration.ts"
+    "test:integration": "node --import tsx --test --test-concurrency=1 tests/*.integration.ts",
+    "daily": "node --import tsx scripts/daily.ts"
   },
   "dependencies": {
+    "@neon/config": "^1.10.0",
+    "@neon/env": "^1.6.8",
+    "@next/env": "^16.4.3",
+    "@vercel/functions": "^3.10.5",
+    "csv-parse": "^7.0.3",
     "dotenv": "^17.2.0",
     "lucide-react": "^0.468.0",
     "next": "^16.1.0",

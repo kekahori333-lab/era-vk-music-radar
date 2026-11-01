@@ -1173,3 +1173,41 @@ footer button {
     transition: none !important;
   }
 }
+.import-panel .import-confirm {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  line-height: 1.7;
+}
+.import-panel .import-confirm input {
+  width: auto;
+  margin: 4px 0;
+  flex-shrink: 0;
+}
+.import-panel input[type="file"] {
+  max-width: 100%;
+  font-size: 12px;
+}
+.import-preview {
+  margin-top: 24px;
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
+}
+.import-preview h3 {
+  font-size: 15px;
+}
+.import-preview ul {
+  list-style: disc;
+  padding-left: 20px;
+  color: #baacbf;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.import-preview a {
+  color: #d393ae;
+  text-decoration: underline;
+}
+.import-panel .admin-message {
+  color: #e4a7c0;
+  padding: 14px;
+}

@@ -7,6 +7,7 @@ import {
   Play,
   ShieldCheck,
 } from "lucide-react";
+import ImportPanel from "@/components/import-panel";
 import type { ProbeReport } from "@/lib/vk-probe";
 type Status = {
   vkConfigured: boolean;
@@ -17,6 +18,7 @@ type Status = {
     status: string;
     posts: number;
     error: string | null;
+    coverage: string;
     truncated: boolean;
   }[];
 };
@@ -142,6 +144,7 @@ export default function Admin() {
         </section>
       ) : (
         <>
+          <ImportPanel onImported={refresh} />
           <section className="panel">
             <h2>Сбор публикаций VK</h2>
             <div className="admin-status">
@@ -233,9 +236,9 @@ export default function Admin() {
             </section>
           )}
           <section className="panel">
-            <h2>Журнал запусков</h2>
+            <h2>Журнал сбора и импорта</h2>
             {!status.runs.length ? (
-              <p>Сбор ещё не запускался.</p>
+              <p>Сбор и импорт ещё не запускались.</p>
             ) : (
               <div className="table-wrap">
                 <table>
@@ -262,7 +265,8 @@ export default function Admin() {
                         </td>
                         <td>{r.posts}</td>
                         <td>
-                          {r.error || (r.truncated ? "Лимит страниц" : "—")}
+                          {r.error ||
+                            (r.truncated ? "Лимит страниц" : r.coverage)}
                         </td>
                       </tr>
                     ))}
